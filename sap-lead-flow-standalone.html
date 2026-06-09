@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP Lead Flow — P Creative</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff;font-family:system-ui,-apple-system,sans-serif}
+@media(prefers-color-scheme:dark){html,body{background:#0f1117}}
+
+@keyframes flow-dash{to{stroke-dashoffset:-24}}
+@keyframes pulse-dot{0%,100%{r:4;opacity:1}50%{r:6;opacity:.65}}
+@keyframes float-badge{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:no-preference){
+  .flow-line{animation:flow-dash 1.6s linear infinite}
+  .pulse{animation:pulse-dot 1.8s ease-in-out infinite}
+  .float-badge{animation:float-badge 2.4s ease-in-out infinite}
+}
+.flow-line{stroke-dasharray:6 4}
+.node{cursor:pointer;transition:opacity .15s}
+.node:hover{opacity:.8}
+
+#tip{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:#001835;color:#fff;font-size:12px;line-height:1.6;
+  padding:9px 16px;border-radius:10px;pointer-events:none;
+  opacity:0;transition:opacity .2s;max-width:340px;text-align:center;z-index:99
+}
+#tip.show{opacity:1}
+
+.t  {font:400 14px/1 system-ui,sans-serif;fill:#0b1220}
+.ts {font:400 12px/1 system-ui,sans-serif;fill:#5f6b85}
+.th {font:500 14px/1 system-ui,sans-serif;fill:#0b1220}
+@media(prefers-color-scheme:dark){
+  .t,.th{fill:#e8e6de}
+  .ts{fill:#9c9a92}
+}
+
+/* Blue */
+.cb rect,.cb circle{fill:#E6F1FB;stroke:#185FA5;stroke-width:.5}
+.cb .th{fill:#0C447C}.cb .ts{fill:#185FA5}
+/* Teal */
+.ct rect,.ct circle{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.5}
+.ct .th{fill:#085041}.ct .ts{fill:#0F6E56}
+/* Purple */
+.cp rect,.cp circle{fill:#EEEDFE;stroke:#534AB7;stroke-width:.5}
+.cp .th{fill:#3C3489}.cp .ts{fill:#534AB7}
+/* Amber */
+.ca rect,.ca circle{fill:#FAEEDA;stroke:#854F0B;stroke-width:.5}
+.ca .th{fill:#633806}.ca .ts{fill:#854F0B}
+/* Green */
+.cg rect,.cg circle{fill:#EAF3DE;stroke:#3B6D11;stroke-width:.5}
+.cg .th{fill:#27500A}.cg .ts{fill:#3B6D11}
+/* Coral */
+.cc rect,.cc circle{fill:#FAECE7;stroke:#993C1D;stroke-width:.5}
+.cc .th{fill:#711B13}.cc .ts{fill:#993C1D}
+
+@media(prefers-color-scheme:dark){
+  .cb rect,.cb circle{fill:#0C447C;stroke:#85B7EB}
+  .cb .th{fill:#B5D4F4}.cb .ts{fill:#85B7EB}
+  .ct rect,.ct circle{fill:#085041;stroke:#5DCAA5}
+  .ct .th{fill:#9FE1CB}.ct .ts{fill:#5DCAA5}
+  .cp rect,.cp circle{fill:#3C3489;stroke:#AFA9EC}
+  .cp .th{fill:#CECBF6}.cp .ts{fill:#AFA9EC}
+  .ca rect,.ca circle{fill:#633806;stroke:#EF9F27}
+  .ca .th{fill:#FAC775}.ca .ts{fill:#EF9F27}
+  .cg rect,.cg circle{fill:#27500A;stroke:#97C459}
+  .cg .th{fill:#C0DD97}.cg .ts{fill:#97C459}
+  .cc rect,.cc circle{fill:#711B13;stroke:#F0997B}
+  .cc .th{fill:#F5C4B3}.cc .ts{fill:#F0997B}
+}
+
+.stat{fill:rgba(0,24,53,.05)}
+@media(prefers-color-scheme:dark){.stat{fill:rgba(255,255,255,.07)}}
+
+.ldiv{stroke:rgba(0,24,53,.1);stroke-dasharray:4 4;stroke-width:.5}
+@media(prefers-color-scheme:dark){.ldiv{stroke:rgba(255,255,255,.1)}}
+
+.llbl{font:500 10px/1 system-ui,sans-serif;letter-spacing:.08em;
+  text-transform:uppercase;fill:rgba(0,24,53,.28)}
+@media(prefers-color-scheme:dark){.llbl{fill:rgba(255,255,255,.22)}}
+
+.aln{fill:none;stroke:rgba(0,24,53,.2)}
+@media(prefers-color-scheme:dark){.aln{stroke:rgba(255,255,255,.18)}}
+
+.pb{fill:#378ADD}.pg{fill:#639922}.po{fill:#BA7517}.pr{fill:#E24B4A}
+
+.tgo{fill:none;stroke:rgba(0,24,53,.15);stroke-width:.5}
+@media(prefers-color-scheme:dark){.tgo{stroke:rgba(255,255,255,.15)}}
+.tgt{font:400 12px/1 system-ui,sans-serif;fill:rgba(0,24,53,.55)}
+.tgs{font:400 11px/1 system-ui,sans-serif;fill:rgba(0,24,53,.35)}
+@media(prefers-color-scheme:dark){
+  .tgt{fill:rgba(255,255,255,.55)}
+  .tgs{fill:rgba(255,255,255,.3)}
+}
+
+.roibg{fill:#e6f9ee;stroke:#3B6D11;stroke-width:.5}
+.roit{font:500 14px/1 system-ui,sans-serif;fill:#27500A}
+.rois{font:400 12px/1 system-ui,sans-serif;fill:#3B6D11}
+@media(prefers-color-scheme:dark){
+  .roibg{fill:#27500A;stroke:#97C459}
+  .roit{fill:#C0DD97}
+  .rois{fill:#97C459}
+}
+
+.rejbg{fill:rgba(0,24,53,.04)}
+@media(prefers-color-scheme:dark){.rejbg{fill:rgba(255,255,255,.05)}}
+.rejt{font:400 11px/1 system-ui,sans-serif;fill:rgba(0,24,53,.35)}
+@media(prefers-color-scheme:dark){.rejt{fill:rgba(255,255,255,.28)}}
+</style>
+</head>
+<body>
+<svg width="100%" viewBox="0 0 680 592" xmlns="http://www.w3.org/2000/svg">
+<title>SAP Full Funnel Lead Flow — P Creative</title>
+<desc>Luồng lead qua 4 lớp: Upper Funnel, Mid Funnel, Bottom Funnel và AI Verification Pipeline trước khi chuyển đến SAP Sales.</desc>
+
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- Lane labels -->
+<text class="llbl" x="28" y="118" text-anchor="middle" transform="rotate(-90,28,118)">Upper funnel</text>
+<text class="llbl" x="28" y="246" text-anchor="middle" transform="rotate(-90,28,246)">Mid funnel</text>
+<text class="llbl" x="28" y="378" text-anchor="middle" transform="rotate(-90,28,378)">Bottom funnel</text>
+<text class="llbl" x="28" y="505" text-anchor="middle" transform="rotate(-90,28,505)">AI verification</text>
+
+<!-- Lane dividers -->
+<line class="ldiv" x1="44" y1="168" x2="648" y2="168"/>
+<line class="ldiv" x1="44" y1="298" x2="648" y2="298"/>
+<line class="ldiv" x1="44" y1="432" x2="648" y2="432"/>
+
+<!-- UPPER FUNNEL -->
+<g class="node cb" onclick="tip('Event targeting: Hyperlocal GPS targeting tại các sự kiện công nghệ và tài chính. Radius 1.5km, in-app và mobile web publisher.')">
+  <rect x="52" y="62" width="136" height="56" rx="8"/>
+  <text class="th" x="120" y="84" text-anchor="middle" dominant-baseline="central">Event targeting</text>
+  <text class="ts" x="120" y="103" text-anchor="middle" dominant-baseline="central">Tech &amp; finance events</text>
+</g>
+
+<g class="node cb" onclick="tip('Audience targeting: Decision maker profile trong IT và tài chính. Kết hợp seniority, industry và enterprise software behavioral signal.')">
+  <rect x="208" y="62" width="136" height="56" rx="8"/>
+  <text class="th" x="276" y="84" text-anchor="middle" dominant-baseline="central">Audience targeting</text>
+  <text class="ts" x="276" y="103" text-anchor="middle" dominant-baseline="central">Decision maker profile</text>
+</g>
+
+<g class="float-badge">
+  <rect class="tgo" x="362" y="70" width="136" height="40" rx="20"/>
+  <text class="tgt" x="430" y="86" text-anchor="middle" dominant-baseline="central">Dynamic banner</text>
+  <text class="tgs" x="430" y="102" text-anchor="middle" dominant-baseline="central">Contextual · Rich Media</text>
+</g>
+
+<rect class="stat" x="510" y="68" width="130" height="44" rx="8"/>
+<text class="ts" x="575" y="84" text-anchor="middle" dominant-baseline="central">Ad Impressions</text>
+<text class="th" x="575" y="103" text-anchor="middle" dominant-baseline="central">1M – 4.5M</text>
+
+<!-- Arrows upper → mid -->
+<line class="flow-line aln" x1="120" y1="118" x2="120" y2="200" stroke-width="1" marker-end="url(#arr)"/>
+<line class="flow-line aln" x1="276" y1="118" x2="276" y2="200" stroke-width="1" marker-end="url(#arr)" style="animation-delay:.5s"/>
+<circle class="pulse pb" cx="120" cy="158" r="4"/>
+<circle class="pulse pb" cx="276" cy="158" r="4" style="animation-delay:.4s"/>
+<text class="ts" x="198" y="156" text-anchor="middle">Clickers</text>
+
+<!-- MID FUNNEL -->
+<g class="node ct" onclick="tip('Retargeting: Chỉ clickers từ upper funnel được nurture. Thông điệp chuyển từ brand awareness sang use case cụ thể và ROI evidence.')">
+  <rect x="52" y="200" width="136" height="56" rx="8"/>
+  <text class="th" x="120" y="222" text-anchor="middle" dominant-baseline="central">Retargeting</text>
+  <text class="ts" x="120" y="241" text-anchor="middle" dominant-baseline="central">Intent signal nurture</text>
+</g>
+
+<g class="node ct" onclick="tip('Google pMax: Asset groups tách theo sản phẩm ERP và CX và theo thị trường. Smart Bidding nhận conversion data có trọng số chất lượng lead, không phải form submit thô.')">
+  <rect x="208" y="200" width="136" height="56" rx="8"/>
+  <text class="th" x="276" y="222" text-anchor="middle" dominant-baseline="central">Google pMax</text>
+  <text class="ts" x="276" y="241" text-anchor="middle" dominant-baseline="central">Smart Bidding opt.</text>
+</g>
+
+<rect class="stat" x="362" y="206" width="130" height="44" rx="8"/>
+<text class="ts" x="427" y="222" text-anchor="middle" dominant-baseline="central">CTR achieved</text>
+<text class="th" x="427" y="241" text-anchor="middle" dominant-baseline="central">1.3% – 5.7%</text>
+
+<rect class="stat" x="504" y="206" width="136" height="44" rx="8"/>
+<text class="ts" x="572" y="222" text-anchor="middle" dominant-baseline="central">Clicks</text>
+<text class="th" x="572" y="241" text-anchor="middle" dominant-baseline="central">40K – 200K</text>
+
+<!-- Arrow mid → bottom -->
+<path class="flow-line aln" d="M120 256 L120 280 L276 280 L276 330" stroke-width="1" marker-end="url(#arr)"/>
+<circle class="pulse pg" cx="198" cy="280" r="4" style="animation-delay:.6s"/>
+
+<!-- BOTTOM FUNNEL -->
+<g class="node cp" onclick="tip('Google Search: Capture active demand. Người dùng đang tìm ERP solutions được dẫn đến micro landing page theo thị trường.')">
+  <rect x="52" y="330" width="136" height="56" rx="8"/>
+  <text class="th" x="120" y="352" text-anchor="middle" dominant-baseline="central">Google Search</text>
+  <text class="ts" x="120" y="371" text-anchor="middle" dominant-baseline="central">Active demand capture</text>
+</g>
+
+<g class="node cp" onclick="tip('Landing Page: Micro LP riêng cho từng thị trường và sản phẩm. A/B testing dẫn dắt bởi GA4 behavioral data: scroll depth, form abandon, CTA hover. Vòng tối ưu chạy liên tục.')">
+  <rect x="208" y="330" width="136" height="56" rx="8"/>
+  <text class="th" x="276" y="352" text-anchor="middle" dominant-baseline="central">Landing page</text>
+  <text class="ts" x="276" y="371" text-anchor="middle" dominant-baseline="central">A/B test + GA4</text>
+</g>
+
+<g class="float-badge" style="animation-delay:.8s">
+  <rect class="tgo" x="362" y="336" width="148" height="44" rx="8"/>
+  <text class="tgt" x="436" y="353" text-anchor="middle" dominant-baseline="central">Scroll depth · Heatmap</text>
+  <text class="tgs" x="436" y="371" text-anchor="middle" dominant-baseline="central">Form abandon · CTA click</text>
+</g>
+
+<rect class="stat" x="520" y="336" width="120" height="44" rx="8"/>
+<text class="ts" x="580" y="352" text-anchor="middle" dominant-baseline="central">Micro LP per market</text>
+<text class="ts" x="580" y="371" text-anchor="middle" dominant-baseline="central">ES · GR · IT</text>
+
+<!-- Arrow → form -->
+<path class="flow-line aln" d="M276 386 L276 412 L350 412" stroke-width="1" marker-end="url(#arr)"/>
+<circle class="pulse po" cx="276" cy="400" r="4" style="animation-delay:.2s"/>
+
+<g class="node cc" onclick="tip('Lead form: Field tối giản, tối ưu hoá liên tục dựa trên A/B test. Mỗi submission đưa vào AI verification pipeline ngay lập tức.')">
+  <rect x="350" y="397" width="128" height="38" rx="8"/>
+  <text class="th" x="414" y="416" text-anchor="middle" dominant-baseline="central">Lead form submit</text>
+</g>
+
+<!-- Arrow → AI -->
+<path class="flow-line aln" d="M414 435 L414 462" stroke-width="1" marker-end="url(#arr)"/>
+<circle class="pulse pr" cx="414" cy="450" r="4" style="animation-delay:1s"/>
+
+<!-- AI VERIFICATION -->
+<g class="node ca" onclick="tip('LinkedIn Identity Match: Xác minh danh tính người submit. Pull current role, seniority và company để đánh giá ICP fit bước đầu.')">
+  <rect x="52" y="462" width="140" height="56" rx="8"/>
+  <text class="th" x="122" y="484" text-anchor="middle" dominant-baseline="central">LinkedIn match</text>
+  <text class="ts" x="122" y="503" text-anchor="middle" dominant-baseline="central">Identity confirmed</text>
+</g>
+
+<g class="node ca" onclick="tip('Firmographic Enrichment: Auto-pull doanh thu hàng năm, quy mô nhân sự, ngành và địa lý. Đối chiếu ICP profile của SAP để tính lead score tổng hợp.')">
+  <rect x="210" y="462" width="140" height="56" rx="8"/>
+  <text class="th" x="280" y="484" text-anchor="middle" dominant-baseline="central">Firmographic data</text>
+  <text class="ts" x="280" y="503" text-anchor="middle" dominant-baseline="central">Revenue · Headcount</text>
+</g>
+
+<g class="node ca" onclick="tip('Lead Scoring: Tổng hợp tất cả signal thành một score. Chỉ leads đạt ngưỡng ICP fit được pass vào HubSpot CRM. Không có ngoại lệ thủ công.')">
+  <rect x="368" y="462" width="140" height="56" rx="8"/>
+  <text class="th" x="438" y="484" text-anchor="middle" dominant-baseline="central">Lead scoring</text>
+  <text class="ts" x="438" y="503" text-anchor="middle" dominant-baseline="central">ICP fit threshold</text>
+</g>
+
+<!-- Arrows AI → HubSpot -->
+<path class="flow-line aln" d="M122 518 L122 550 L510 550" stroke-width="1" marker-end="url(#arr)"/>
+<path class="flow-line aln" d="M280 518 L280 550" stroke-width=".8" style="animation-delay:.3s"/>
+<path class="flow-line aln" d="M438 518 L438 550" stroke-width=".8" style="animation-delay:.6s"/>
+
+<!-- HubSpot CRM -->
+<g class="node cg" onclick="tip('HubSpot CRM: 100–120 verified leads mỗi campaign, đầy đủ enriched data. Đội sales SAP nhận leads sẵn sàng tiếp cận, 1–2 sales opportunities mỗi campaign, giá trị ước tính €125K mỗi cơ hội.')">
+  <rect x="510" y="458" width="140" height="66" rx="8"/>
+  <text class="th" x="580" y="479" text-anchor="middle" dominant-baseline="central">HubSpot CRM</text>
+  <text class="ts" x="580" y="498" text-anchor="middle" dominant-baseline="central">100–120 verified</text>
+  <text class="ts" x="580" y="515" text-anchor="middle" dominant-baseline="central">leads / campaign</text>
+</g>
+
+<!-- SAP Sales arrow -->
+<path class="aln" d="M650 491 L666 491" fill="none" stroke="#3B6D11" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<!-- Reject -->
+<rect class="rejbg" x="370" y="532" width="78" height="26" rx="6"/>
+<text class="rejt" x="409" y="545" text-anchor="middle" dominant-baseline="central">Rejected</text>
+<path d="M409 532 L409 522 L352 522 L352 492" fill="none" stroke="rgba(0,24,53,.1)" stroke-width=".5" stroke-dasharray="3 3"/>
+
+<!-- ROI badge -->
+<g class="float-badge" style="animation-delay:1.2s">
+  <rect class="roibg" x="510" y="396" width="140" height="50" rx="8"/>
+  <text class="roit" x="580" y="415" text-anchor="middle" dominant-baseline="central">730% ROI</text>
+  <text class="rois" x="580" y="433" text-anchor="middle" dominant-baseline="central">€15K → €125K opportunity</text>
+</g>
+
+</svg>
+
+<div id="tip"></div>
+
+<script>
+function tip(msg){
+  var el=document.getElementById('tip');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(function(){el.classList.remove('show');},4200);
+}
+</script>
+</body>
+</html>
